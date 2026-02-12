@@ -1,7 +1,12 @@
 import { Layout, Card, Typography, Form, Input, Button, Flex, Space } from "antd"
 import { PostItemPage } from "./post-item/PostItemPage"
+import { useMount } from "../../utils/use-mount"
+import { usePostStore } from "../../stores/usePostStore"
+import { formatTimeAgo } from "../../utils/formatTime"
 
 const PostsPage: React.FC = () => {
+    const { fetchPosts } = usePostStore.getState()
+    const posts = usePostStore().getPosts()
     const { Header } = Layout
     const { Title } = Typography
     const { TextArea } = Input
@@ -13,11 +18,17 @@ const PostsPage: React.FC = () => {
         console.log(values)
     }
 
+    useMount(async () => {
+        await fetchPosts()
+    })
 
     return (
         <Flex vertical gap={10} style={{
-            minHeight: "100vh", background: "#f0f2f5",
-            width: '800px'
+            height: "100vh",
+            background: "#f0f2f5",
+            width: '800px',
+            margin: "0 auto",
+            overflow: "hidden",
         }}>
             <Header
                 style={{
@@ -91,12 +102,20 @@ const PostsPage: React.FC = () => {
                     </Form>
                 </Card>
             </Space.Compact>
-            <Space.Compact style={{
+
+            <Flex vertical gap={".5rem"} style={{
                 padding: "0px 16px",
+                overflowY: "auto",
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                flex: 1,
             }}>
-                <PostItemPage title="um post qualquer" content="dasofasdfasdasdfasdfasd"
-                    createdAt="01/12/2025" username="Jonathan" key={93039} />
-            </Space.Compact>
+                {posts.map(post => (
+                    <PostItemPage title={post.title} content={post.content}
+                        createdAt={formatTimeAgo(post.created_datetime)} username={post.username} key={post.id} />
+                ))}
+            </Flex>
+
         </Flex>
     )
 }
