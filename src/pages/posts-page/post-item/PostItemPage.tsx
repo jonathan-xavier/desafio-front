@@ -2,7 +2,10 @@ import { Card, Typography, Space, Flex } from "antd"
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
 import colors from "../../../ui/colors"
 import { usePostStore } from "../../../stores/usePostStore"
-import { Modal } from "antd"
+import { Modal, message } from "antd"
+import { PostUpdateItem } from "../post-update-item/PostUpdateItem"
+import { useState } from "react"
+import type { IPostCreate } from "../../../use-cases/post-case"
 const { Text, Title } = Typography
 
 interface PostCardProps {
@@ -13,14 +16,20 @@ interface PostCardProps {
     createdAt: string
 }
 
-export const PostItemPage = ({
+const PostItemPage: React.FC<PostCardProps> = ({
     id,
     title,
     username,
     content,
     createdAt,
-}: PostCardProps) => {
+}) => {
     const { deletePost } = usePostStore()
+    const [isOpen, setIsOpen] = useState(false)
+    const { updateItemPost } = usePostStore()
+    const initialValues: Pick<IPostCreate, "title" | "content"> = {
+        title,
+        content,
+    }
     const showDeleteConfirm = () => {
         Modal.confirm({
             title: "Are you sure you want to delete this item?",
@@ -28,26 +37,38 @@ export const PostItemPage = ({
             cancelText: "Cancel",
             okType: "danger",
             centered: true,
-            onOk() {
-                deleteItemPost()
+            async onOk() {
+                await deleteItemPost()
+                message.success({
+                    content: "Post deleted successfully!",
+                    duration: 2,
+                })
             }
         })
     }
 
+    const updateItem = async (paramsUpdate: Pick<IPostCreate, "title" | "content">) => {
+        if (id) {
+            await updateItemPost(id, {
+                ...paramsUpdate,
+            })
+            message.success({
+                content: "Post updated successfully!",
+                duration: 2,
+            })
+            setIsOpen(false)
+        }
+    }
+
     const deleteItemPost = async () => {
-        console.log("chegou aqui")
         if (id) {
             await deletePost(id)
         }
     }
 
-    const editPost = () => {
-        console.log("edit post")
-    }
     return (
         <Card
             style={{
-                // width: 800,
                 borderRadius: 12,
                 width: "100%",
                 padding: 0
@@ -70,7 +91,7 @@ export const PostItemPage = ({
 
                 <Space size={16}>
                     <DeleteOutlined style={{ fontSize: 18, cursor: "pointer" }} onClick={showDeleteConfirm} />
-                    <EditOutlined style={{ fontSize: 18, cursor: "pointer" }} onClick={editPost} />
+                    <EditOutlined style={{ fontSize: 18, cursor: "pointer" }} onClick={() => setIsOpen(true)} />
                 </Space>
             </Flex>
             <Flex vertical style={{ padding: 20 }}>
@@ -86,6 +107,19 @@ export const PostItemPage = ({
                     {content}
                 </Text>
             </Flex>
+
+            {!!isOpen && (
+                <PostUpdateItem
+                    open={isOpen}
+                    onClose={() => setIsOpen(false)}
+                    onSave={async (values) => {
+                        await updateItem(values)
+                    }}
+                    initialValues={initialValues}
+                />
+            )}
         </Card>
     )
 }
+
+export { PostItemPage }

@@ -1,6 +1,7 @@
 import { Button, Card, Form, Input, Typography, type FormProps } from "antd"
 import Title from "antd/es/typography/Title"
 import { useNavigate } from "react-router-dom"
+import { usePostStore } from "../../stores/usePostStore"
 
 const styles: Record<string, React.CSSProperties> = {
     container: {
@@ -22,16 +23,16 @@ type ILogin = {
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate()
+    const { setUsername } = usePostStore()
     const [form] = Form.useForm()
     const username = Form.useWatch("username", form)
-    const allowUsername = ["jhon"]
 
     const onFinish: FormProps<ILogin>['onFinish'] = async (values) => {
-        if(allowUsername.includes(values.username)){
+        if(values){
+            setUsername(values.username)
             navigate('/posts')
         }
     }
-
 
     return (
         <div style={styles.container}>

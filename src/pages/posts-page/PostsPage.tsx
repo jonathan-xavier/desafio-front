@@ -5,11 +5,13 @@ import { usePostStore } from "../../stores/usePostStore"
 import { formatTimeAgo } from "../../utils/formatTime"
 import { FileOutlined } from "@ant-design/icons"
 import colors from "../../ui/colors"
+import { useNavigate } from "react-router-dom"
 
 const PostsPage: React.FC = () => {
     const { fetchPosts } = usePostStore.getState()
     const posts = usePostStore().getPosts()
-    const {isProcessing} = usePostStore()
+    const username = usePostStore().getUsername()
+    const { isProcessing } = usePostStore()
     const { createPost: createPosts } = usePostStore()
     const { Header } = Layout
     const { Title } = Typography
@@ -17,6 +19,7 @@ const PostsPage: React.FC = () => {
     const [form] = Form.useForm()
     const title = Form.useWatch("title", form)
     const content = Form.useWatch("content", form)
+    const navigate = useNavigate()
 
     type IFields = {
         title?: string,
@@ -24,7 +27,7 @@ const PostsPage: React.FC = () => {
     }
 
     const handleSubmit: FormProps<IFields>['onFinish'] = async (values) => {
-        if(!values){
+        if (!values) {
             return null
         }
         await createPosts(values)
@@ -33,8 +36,13 @@ const PostsPage: React.FC = () => {
     }
 
     useMount(async () => {
-        await fetchPosts()
-    })
+        console.log("cjeoiu aua")
+        if (posts && username !== "") {
+            await fetchPosts()
+        }else {
+            navigate('/')
+        }
+    }, (!!posts))
 
     return (
         <Flex vertical gap={10} style={{
@@ -83,7 +91,7 @@ const PostsPage: React.FC = () => {
                             name="title"
                             rules={[{ required: true, message: "Title is required" }]}
                         >
-                            <Input placeholder="Hello world" disabled={isProcessing}/>
+                            <Input placeholder="Hello world" disabled={isProcessing} />
                         </Form.Item>
 
                         <Form.Item
@@ -123,7 +131,8 @@ const PostsPage: React.FC = () => {
             }}>
                 {posts.length ? posts.map(post => (
                     <PostItemPage title={post.title} content={post.content}
-                        createdAt={formatTimeAgo(post.created_datetime)} username={post.username} key={post.id} />
+                        createdAt={formatTimeAgo(post.created_datetime)} username={post.username} key={post.id}
+                        id={post.id} />
                 )) : (
                     <>
                         <Flex vertical justify="center" align="center" style={{ paddingTop: "5rem" }}>

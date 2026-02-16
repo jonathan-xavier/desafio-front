@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { cloneObject } from "../utils/clone_object"
-import { createPost, deletePost, getPosts, type IPostCreate } from "../use-cases/post-case"
+import { createPost, deletePost, getPosts, updatePost, type IPostCreate } from "../use-cases/post-case"
+import { AxiosError } from "axios"
 
 type IPostStore = {
     id: number,
@@ -13,9 +14,13 @@ type IPostStore = {
 
 type usePostProps = {
     _posts: IPostStore[],
+    _username: string | "",
+    getUsername: () => string,
+    setUsername: (username: string) => void,
     getPosts: () => IPostStore[],
     fetchPosts: () => Promise<void>,
     createPost: (postParams: IPostCreate) => Promise<void | null>,
+    updateItemPost: (idPost: number, postPamas: Pick<IPostCreate, "title" | "content">) => Promise<void>,
     deletePost: (idPost: number) => Promise<void | null>,
     isProcessing: boolean,
 }
@@ -23,13 +28,24 @@ type usePostProps = {
 const usePostStore = create<usePostProps>((set, get) => ({
     _posts: [],
     isProcessing: false,
+    _username: "",
 
     getPosts() {
         const { _posts } = get()
         return cloneObject(_posts)
     },
+    getUsername() {
+        const { _username } = get()
+        return cloneObject(_username)
+    },
+    setUsername(username: string) {
+        set({
+            _username: username,
+        })
+    },
 
     createPost: async (postParams: IPostCreate) => {
+        const {_username} = get()
         if (!postParams) {
             return null
         }
@@ -38,7 +54,7 @@ const usePostStore = create<usePostProps>((set, get) => ({
         })
         await createPost({
             ...postParams,
-            username: "jhon",
+            username: _username,
         })
         await get().fetchPosts()
         set({
@@ -46,7 +62,7 @@ const usePostStore = create<usePostProps>((set, get) => ({
         })
     },
 
-    deletePost: async (idPost: number) => {
+    deletePost: async (idPost: number,) => {
         if (!idPost) {
             return null
         }
@@ -65,9 +81,31 @@ const usePostStore = create<usePostProps>((set, get) => ({
             set({
                 isProcessing: false,
             })
-            console.error(error)
+            const { message } = error as AxiosError
+            console.error(message)
         }
 
+    },
+
+    updateItemPost: async (idPost: number, postParams: Pick<IPostCreate, "title" | "content">) => {
+        set({
+            isProcessing: true,
+        })
+        try {
+            await updatePost(idPost, postParams)
+            await get().fetchPosts()
+
+            set({
+                isProcessing: false,
+            })
+
+        } catch (error) {
+            set({
+                isProcessing: false,
+            })
+            const { message } = error as AxiosError
+            console.error(message)
+        }
     },
 
     fetchPosts: async () => {
