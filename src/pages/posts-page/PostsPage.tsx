@@ -36,10 +36,9 @@ const PostsPage: React.FC = () => {
     }
 
     useMount(async () => {
-        console.log("cjeoiu aua")
         if (posts && username !== "") {
             await fetchPosts()
-        }else {
+        } else {
             navigate('/')
         }
     }, (!!posts))

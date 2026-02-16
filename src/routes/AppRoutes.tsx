@@ -15,7 +15,6 @@ const AppRoutes: React.FC = () => {
             </Route>
         ))
     }
-    console.log(firstRoute)
     return (
 
         <BrowserRouter>
