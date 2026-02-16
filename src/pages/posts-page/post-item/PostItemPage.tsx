@@ -1,10 +1,12 @@
 import { Card, Typography, Space, Flex } from "antd"
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
 import colors from "../../../ui/colors"
-
+import { usePostStore } from "../../../stores/usePostStore"
+import { Modal } from "antd"
 const { Text, Title } = Typography
 
 interface PostCardProps {
+    id?: number,
     title: string
     username: string
     content: string
@@ -12,11 +14,36 @@ interface PostCardProps {
 }
 
 export const PostItemPage = ({
+    id,
     title,
     username,
     content,
     createdAt,
 }: PostCardProps) => {
+    const { deletePost } = usePostStore()
+    const showDeleteConfirm = () => {
+        Modal.confirm({
+            title: "Are you sure you want to delete this item?",
+            okText: "Delete",
+            cancelText: "Cancel",
+            okType: "danger",
+            centered: true,
+            onOk() {
+                deleteItemPost()
+            }
+        })
+    }
+
+    const deleteItemPost = async () => {
+        console.log("chegou aqui")
+        if (id) {
+            await deletePost(id)
+        }
+    }
+
+    const editPost = () => {
+        console.log("edit post")
+    }
     return (
         <Card
             style={{
@@ -42,8 +69,8 @@ export const PostItemPage = ({
                 </Title>
 
                 <Space size={16}>
-                    <DeleteOutlined style={{ fontSize: 18, cursor: "pointer" }} />
-                    <EditOutlined style={{ fontSize: 18, cursor: "pointer" }} />
+                    <DeleteOutlined style={{ fontSize: 18, cursor: "pointer" }} onClick={showDeleteConfirm} />
+                    <EditOutlined style={{ fontSize: 18, cursor: "pointer" }} onClick={editPost} />
                 </Space>
             </Flex>
             <Flex vertical style={{ padding: 20 }}>

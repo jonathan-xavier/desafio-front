@@ -15,9 +15,29 @@ export type IPostCase = {
     previous: number | null,
     results: IPostArr[]
 }
+
+export type IPostCreate = {
+    username?: string,
+    title?: string,
+    content?: string,
+}
 const getPosts = async () => {
     return httpClient.get<IPostCase>('https://dev.codeleap.co.uk/careers/')
 }
 
+const createPost = async (postData: IPostCreate) => {
+    return httpClient.post<IPostCreate>('https://dev.codeleap.co.uk/careers/', {
+        ...postData,
+    })
+}
 
-export { getPosts }
+const deletePost = async (idPost: number) => {
+    const { status } = await httpClient.delete<number>(`https://dev.codeleap.co.uk/careers/${idPost}/`)
+    if (status === 204) {
+        return true
+    }
+    return false
+}
+
+
+export { getPosts, createPost, deletePost }
