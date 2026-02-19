@@ -13,6 +13,7 @@
     "@ant-design/icons": "^6.1.0",
     "@loadable/component": "^5.16.7",
     "@types/loadable__component": "^5.13.10",
+    "@vercel/analytics": "^1.6.1",
     "antd": "^6.2.3",
     "axios": "^1.13.5",
     "dayjs": "^1.11.19",
